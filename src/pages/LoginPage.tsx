@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { SignUpForm } from "../components/SignUpForm"
+import { Page } from "../components"
 
 const SIGNIN = "signin"
 const SIGNUP = "signup"
@@ -20,10 +21,14 @@ export const LoginPage = () => {
   }
 
   return (
-    <>
-      <button onClick={() => setView(SIGNIN)}>Sign In</button>
+    <Page>
+      <button
+      className="w-24 p-3 bg-zinc-950 font-bold text-white rounded-md mb-3 hover:bg-zinc-700 active:bg-zinc-500"
+      onClick={() => setView(SIGNIN)}>Sign In</button>
       <br />
-      <button onClick={() => setView(SIGNUP)}>Sign Up</button>
+      <button
+      className="w-24 p-3 border-zinc-950 border-2 font-bold rounded-md hover:bg-zinc-300 active:bg-zinc-500 active:text-white"
+      onClick={() => setView(SIGNUP)}>Sign Up</button>
       {view && (
         <div
           onClick={() => setView(null)}
@@ -34,6 +39,6 @@ export const LoginPage = () => {
           </div>
         </div>
       )}
-    </>
+    </Page>
   )
 }
