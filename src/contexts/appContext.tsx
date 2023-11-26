@@ -1,10 +1,10 @@
 import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useState } from "react";
-import { supabase } from "../lib";
+import { signUp, supabase } from "../lib";
 import { AuthError, Session, SupabaseClient, User } from "@supabase/supabase-js";
 
 type TAppContext = {
   supabase: SupabaseClient<any, "public", any>
-  signup: () => Promise<void>
+  signup: (email: string, password: string) => Promise<void>
   user: User | null
   error: AuthError | null
   session: Session | null
@@ -12,7 +12,7 @@ type TAppContext = {
 
 const AppContext = createContext<TAppContext>({
   supabase,
-  signup: async () => {},
+  signup: async (email: string, password: string) => {},
   user: null,
   error: null,
   session: null
@@ -23,15 +23,12 @@ export const AppContextProvider: React.FC<PropsWithChildren> = ({ children }) =>
   const [error, setError] = useState<AuthError | null>(null)
   const [session, setSession] = useState<Session | null>(null)
 
-  const signup = useCallback( async () => {
-    const { data, error } = await supabase.auth.signUp({
-      email: 'ben.isenstein@gmail.com',
-      password: 'bens-password'
+  const signup = useCallback( async (email: string, password: string) => {
+    signUp(email, password).then(({error, data}) => {
+      setUser(data.user)
+      setError(error)
+      setSession(data.session)
     })
-  
-    setUser(data.user)
-    setError(error)
-    setSession(data.session)
   }, [])
 
   useEffect(() => {
