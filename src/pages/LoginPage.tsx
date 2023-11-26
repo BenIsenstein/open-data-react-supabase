@@ -23,11 +23,11 @@ export const LoginPage = () => {
   return (
     <Page>
       <button
-      className="w-24 p-3 bg-zinc-950 font-bold text-white rounded-md mb-3 hover:bg-zinc-700 active:bg-zinc-500"
+      className="w-28 p-3 bg-zinc-950 font-bold text-white rounded-md mb-3 hover:bg-zinc-700 active:bg-zinc-500"
       onClick={() => setView(SIGNIN)}>Sign In</button>
       <br />
       <button
-      className="w-24 p-3 border-zinc-950 border-2 font-bold rounded-md hover:bg-zinc-300 active:bg-zinc-500 active:text-white"
+      className="w-28 p-3 border-zinc-950 border-2 font-bold rounded-md hover:bg-zinc-300 active:bg-zinc-500 active:text-white"
       onClick={() => setView(SIGNUP)}>Sign Up</button>
       {view && (
         <div
