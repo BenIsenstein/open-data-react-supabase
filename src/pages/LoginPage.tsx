@@ -38,6 +38,11 @@ export const LoginPage = () => {
       <button
         className="w-28 p-3 border-zinc-950 border-2 font-bold rounded-md hover:bg-zinc-300 active:bg-zinc-500 active:text-white"
         onClick={() => setView(SIGNUP)}>Sign Up</button>
+      <br />
+      <br />
+      <a className="font-bold hover:underline hover:text-blue-700 active:text-blue-400" href="/exampleapp">
+        3rd-party sign-in beta
+      </a>
       {view && (
         <div
           onClick={() => setView(null)}
