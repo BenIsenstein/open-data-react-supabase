@@ -1,5 +1,5 @@
 import { FC, PropsWithChildren } from "react";
-import { useAppContext } from "../../contexts/appContext";
+import { useAppContext } from "contexts";
 
 export const Page: FC<PropsWithChildren> = ({ children }) => {
     const { user, signout } = useAppContext()

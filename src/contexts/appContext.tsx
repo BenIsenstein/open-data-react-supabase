@@ -1,6 +1,6 @@
 import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useState } from "react";
 import { AuthError, Session, SupabaseClient, User } from "@supabase/supabase-js";
-import { signIn, signOut, signUp, supabase } from "../lib";
+import { signIn, signOut, signUp, supabase } from "lib";
 
 type TAppContext = {
   supabase: SupabaseClient<unknown, "public", unknown>

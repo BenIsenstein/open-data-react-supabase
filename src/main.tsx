@@ -2,8 +2,8 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
-import { AppContextProvider } from './contexts/appContext'
-import { LoginPage, ExampleApp } from './pages'
+import { AppContextProvider } from 'contexts'
+import { LoginPage, ExampleApp } from 'pages'
 
 const router = createBrowserRouter([
   {

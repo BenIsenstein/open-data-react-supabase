@@ -1,7 +1,6 @@
 import { useState } from "react"
-import { EmailLoginForm } from "../components/SignUpForm"
-import { Page } from "../components"
-import { useAppContext } from "../contexts/appContext"
+import { Page, EmailLoginForm, Link } from "components"
+import { useAppContext } from "contexts"
 
 const SIGNIN = "signin"
 const SIGNUP = "signup"
@@ -40,9 +39,9 @@ export const LoginPage = () => {
         onClick={() => setView(SIGNUP)}>Sign Up</button>
       <br />
       <br />
-      <a className="font-bold hover:underline hover:text-blue-700 active:text-blue-400" href="/exampleapp">
+      <Link to="/exampleapp">
         3rd-party sign-in beta
-      </a>
+      </Link>
       {view && (
         <div
           onClick={() => setView(null)}

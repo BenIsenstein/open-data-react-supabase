@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ViewType } from '@supabase/auth-ui-shared'
-import { Auth } from '../components/Auth'
-import { useAppContext } from '../contexts/appContext'
+import { Auth } from 'components'
+import { useAppContext } from 'contexts'
 
 const views: { id: ViewType; title: string }[] = [
   { id: 'sign_in', title: 'Sign In' },
@@ -35,7 +35,7 @@ export const ExampleApp = () => {
         />
       </div>
 
-      <div className="flex flex-col items-center gap-4 border-[1px] border-slate-300 rounded-lg shadow-lg p-8 w-96">
+      <div className="flex flex-col items-center gap-4 border-[1px] border-slate-300 rounded-lg shadow-lg p-8 w-96 mb-6">
         <div className="text-scale-1200 text-base font-semibold">Component View</div>
         <select
           value={views.indexOf(view)}
