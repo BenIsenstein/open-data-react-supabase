@@ -24,3 +24,8 @@ variable "supabase_key" {
   description = "Supabase Anonymous Project key"
   type        = string
 }
+
+variable "supabase_url" {
+  description = "Supabase Anonymous Project url"
+  type        = string
+}

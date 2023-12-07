@@ -62,6 +62,7 @@ resource "null_resource" "web_build_and_deploy" {
     working_dir = "${path.module}/.."
     environment = {
       VITE_SUPABASE_API_KEY = var.supabase_key
+      VITE_SUPABASE_API_URL = var.supabase_url
     }
   }
 
