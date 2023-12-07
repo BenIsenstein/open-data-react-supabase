@@ -1,20 +1,20 @@
 {
-    auto_https off
-    log {
-        format console
-    }
-    servers {
-        trusted_proxies static private_ranges
-    }
+	auto_https off
+	log {
+		format console
+	}
+	servers {
+		trusted_proxies static private_ranges
+	}
 }
 
 :{$PORT} {
-    log {
-        format console
-    }
-    respond /health 200
-    root * dist
-    encode gzip
-    file_server
-    try_files {path} /index.html
+	log {
+		format console
+	}
+	respond /health 200
+	root * dist
+	encode gzip
+	file_server
+	try_files {path} /index.html
 }
