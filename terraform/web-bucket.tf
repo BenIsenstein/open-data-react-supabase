@@ -5,7 +5,7 @@ locals {
 # Creates an s3 Bucket
 module "s3_web_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
-  version = "3.5.0"
+  version = "3.15.1"
 
   bucket        = local.bucket_name
   force_destroy = false
@@ -14,6 +14,10 @@ module "s3_web_bucket" {
     enabled = false
   }
 
+  block_public_policy = false
+  ignore_public_acls = false
+  restrict_public_buckets = false
+  block_public_acls = false
   attach_policy = true
   policy = jsonencode({
     "Version" = "2012-10-17"
@@ -59,7 +63,7 @@ resource "null_resource" "web_build_and_deploy" {
   }
 
   provisioner "local-exec" {
-    command     = "aws s3 sync dist s3://${local.bucket_name} --delete --acl public-read"
+    command     = "aws s3 sync dist s3://${local.bucket_name} --delete"
     working_dir = "${path.module}/.."
   }
 
