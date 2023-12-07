@@ -19,3 +19,8 @@ variable "repo_url" {
   description = "url of the repository"
   type        = string
 }
+
+variable "supabase_key" {
+  description = "Supabase Anonymous Project key"
+  type        = string
+}

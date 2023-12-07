@@ -14,11 +14,11 @@ module "s3_web_bucket" {
     enabled = false
   }
 
-  block_public_policy = false
-  ignore_public_acls = false
+  block_public_policy     = false
+  ignore_public_acls      = false
   restrict_public_buckets = false
-  block_public_acls = false
-  attach_policy = true
+  block_public_acls       = false
+  attach_policy           = true
   policy = jsonencode({
     "Version" = "2012-10-17"
     "Statement" = [
@@ -60,6 +60,9 @@ resource "null_resource" "web_build_and_deploy" {
   provisioner "local-exec" {
     command     = "npm install && npm run build"
     working_dir = "${path.module}/.."
+    environment = {
+      VITE_SUPABASE_API_KEY = var.supabase_key
+    }
   }
 
   provisioner "local-exec" {
