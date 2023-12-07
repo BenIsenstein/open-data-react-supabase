@@ -1,0 +1,69 @@
+locals {
+  bucket_name = "${var.project_name}-webapp"
+}
+
+# Creates an s3 Bucket
+module "s3_web_bucket" {
+  source  = "terraform-aws-modules/s3-bucket/aws"
+  version = "3.5.0"
+
+  bucket        = local.bucket_name
+  force_destroy = false
+
+  versioning = {
+    enabled = false
+  }
+
+  attach_policy = true
+  policy = jsonencode({
+    "Version" = "2012-10-17"
+    "Statement" = [
+      {
+        "Sid"       = "PublicReadGetObject"
+        "Effect"    = "Allow"
+        "Principal" = "*"
+        "Action" = [
+          "s3:GetObject"
+        ]
+        "Resource" = [
+          "arn:aws:s3:::${local.bucket_name}/*"
+        ]
+      }
+    ]
+  })
+
+  cors_rule = [
+    {
+      allowed_headers = [
+        "*"
+      ]
+      allowed_methods = [
+        "GET",
+      ]
+      allowed_origins = [
+        "*"
+      ]
+    }
+  ]
+
+  website = {
+    index_document = "index.html"
+    error_document = "index.html"
+  }
+}
+
+resource "null_resource" "web_build_and_deploy" {
+  provisioner "local-exec" {
+    command     = "npm install && npm run build"
+    working_dir = "${path.module}/.."
+  }
+
+  provisioner "local-exec" {
+    command     = "aws s3 sync dist s3://${local.bucket_name} --delete --acl public-read"
+    working_dir = "${path.module}/.."
+  }
+
+  triggers = {
+    on_new_bucket = coalesce(module.s3_web_bucket.s3_bucket_id, "")
+  }
+}

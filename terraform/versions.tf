@@ -1,16 +1,31 @@
 terraform {
-    required_version = "1.6.5"
+  required_version = "1.6.5"
 
-    backend "local" {
-        path = "./terraform.tfstate"
+  backend "local" {
+    path = "./terraform.tfstate"
+  }
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "5.29.0"
     }
 
-    required_providers {
-        null = {
-            source = "hashicorp/null"
-            version = "3.2.2"
-        }
+    github = {
+      source  = "integrations/github"
+      version = "5.42.0"
     }
+  }
 }
 
-provider "null" {}
+provider "github" {}
+
+provider "aws" {
+  region = var.aws_region
+
+  default_tags {
+    tags = {
+      project = var.project_name
+    }
+  }
+}
