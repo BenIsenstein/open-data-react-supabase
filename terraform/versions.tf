@@ -13,8 +13,6 @@ terraform {
   }
 }
 
-provider "github" {}
-
 provider "aws" {
   region = var.aws_region
 
