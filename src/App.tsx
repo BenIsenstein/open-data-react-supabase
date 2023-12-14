@@ -26,8 +26,8 @@ export const App = () => {
           Logout
         </button>
       )}
-      <div className="relative flex justify-center gap-6 pt-8">
-        <div className="relative w-96 border-[1px] border-slate-300 rounded-lg shadow-lg px-8 py-12">
+      <div className="relative flex flex-col items-center gap-6 pt-10 md:pt-6 md:flex-row md:justify-center md:items-start">
+        <div className="relative w-full max-w-sm border-[1px] border-slate-300 rounded-lg shadow-lg px-8 py-12">
           <div className="mb-6 flex flex-col gap-3">
             <h1 className="text-scale-1200 text-2xl">
               Acme Industries
