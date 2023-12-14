@@ -1,31 +1,27 @@
-import { SupabaseClient } from '@supabase/supabase-js'
 import React, { useState } from 'react'
 import { I18nVariables } from '@supabase/auth-ui-shared'
-import { Appearance } from '../types'
-import { Button, Container, Input, Label, Message } from '../components'
+import { useAppContext } from 'contexts'
 
-export function UpdatePassword({
-  supabaseClient,
-  i18n,
-  appearance,
-}: {
-  supabaseClient: SupabaseClient
+type UpdatePasswordProps = {
   i18n?: I18nVariables
-  appearance?: Appearance
-}) {
+}
+
+export function UpdatePassword({ i18n }: UpdatePasswordProps) {
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const { supabase, withCaptureAuthError, error } = useAppContext()
+
   const handlePasswordReset = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setError('')
     setMessage('')
     setLoading(true)
-    const { error } = await supabaseClient.auth.updateUser({ password })
-    if (error) setError(error.message)
-    else setMessage(i18n?.update_password?.confirmation_text as string)
+
+    const { error } = await withCaptureAuthError(() => supabase.auth.updateUser({ password }))
+
+    if (!error) setMessage(i18n?.update_password?.confirmation_text as string)
+
     setLoading(false)
   }
 
@@ -33,12 +29,13 @@ export function UpdatePassword({
 
   return (
     <form id="auth-update-password" onSubmit={handlePasswordReset}>
-      <Container gap="large" direction={'vertical'} appearance={appearance}>
+      <div className="flex flex-col gap-2 my-2">
         <div>
-          <Label htmlFor="password" appearance={appearance}>
+          <label htmlFor="password" className="text-sm mb-1 text-black block">
             {labels?.password_label}
-          </Label>
-          <Input
+          </label>
+          <input
+            className="py-1 px-2 cursor-text border-[1px] border-solid border-black text-s w-full text-black box-border hover:[outline:none] focus:[outline:none]"
             id="password"
             name="password"
             placeholder={labels?.password_label}
@@ -47,24 +44,18 @@ export function UpdatePassword({
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setPassword(e.target.value)
             }
-            appearance={appearance}
           />
         </div>
-        <Button
+        <button
           type="submit"
-          color="primary"
-          loading={loading}
-          appearance={appearance}
+          className="flex justify-center items-center gap-2 rounded-md text-sm p-1 cursor-pointer border-[1px] border-zinc-950 w-full disabled:opacity-70 disabled:cursor-[unset] bg-amber-200 text-amber-950 hover:bg-amber-300"
+          disabled={loading}
         >
           {loading ? labels?.loading_button_label : labels?.button_label}
-        </Button>
-        {message && <Message appearance={appearance}>{message}</Message>}
-        {error && (
-          <Message color="danger" appearance={appearance}>
-            {error}
-          </Message>
-        )}
-      </Container>
+        </button>
+        {message && <span className="block text-center text-xs mb-1 rounded-md py-6 px-4 border-[1px] border-black">{message}</span>}
+        {error && <span className="block text-center text-xs mb-1 rounded-md py-6 px-4 border-[1px] text-red-900 bg-red-100 border-red-950">{error.message}</span>}
+      </div>
     </form>
   )
 }

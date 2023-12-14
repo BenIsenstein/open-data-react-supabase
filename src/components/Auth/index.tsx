@@ -1,2 +1,2 @@
-export * from './Auth'
-export * from './components'
+import { Auth } from './Auth'
+export { Auth }

@@ -1,7 +1,14 @@
-import { createStitches, createTheme } from '@stitches/core'
-import { I18nVariables, merge, VIEWS, en } from '@supabase/auth-ui-shared'
-import React, { useEffect, useState } from 'react'
-import { Auth as AuthProps } from './types'
+import { useEffect, useState, PropsWithChildren, FC } from 'react'
+import {
+  I18nVariables,
+  merge,
+  VIEWS,
+  en,
+  ProviderScopes,
+  ViewType,
+  RedirectTo,
+  OtpType
+} from '@supabase/auth-ui-shared'
 import {
   EmailAuth,
   EmailAuthProps,
@@ -11,115 +18,75 @@ import {
   UpdatePassword,
   VerifyOtp,
 } from './views'
+import { useAppContext } from 'contexts'
+import { Provider } from '@supabase/supabase-js';
 
-export const Auth = ({
-  supabaseClient,
-  socialLayout = 'vertical',
+type AuthProps = {
+  providers?: Provider[]
+  providerScopes?: Partial<ProviderScopes>
+  queryParams?: {
+    [key: string]: string;
+  }
+  view: ViewType
+  setView: React.Dispatch<React.SetStateAction<ViewType>>
+  redirectTo?: RedirectTo
+  onlyThirdPartyProviders?: boolean
+  magicLink?: boolean
+  showLinks?: boolean
+  otpType?: OtpType
+  additionalData?: {
+    [key: string]: unknown
+  }
+  // Override the labels and button text
+  localization?: {
+    variables?: I18nVariables;
+  }
+}
+
+export const Auth: FC<PropsWithChildren<AuthProps>> = ({
   providers,
   providerScopes,
   queryParams,
   view = 'sign_in',
+  setView,
   redirectTo,
   onlyThirdPartyProviders = false,
   magicLink = false,
   showLinks = true,
-  appearance,
-  theme = 'default',
   localization = { variables: {} },
   otpType = 'email',
   additionalData,
   children,
-}: AuthProps): JSX.Element | null => {
-  /**
-   * Localization support
-   */
-
+}) => {
+  // Localization support
   const i18n: I18nVariables = merge(en, localization.variables ?? {})
 
-  const [authView, setAuthView] = useState(view)
   const [defaultEmail, setDefaultEmail] = useState('')
   const [defaultPassword, setDefaultPassword] = useState('')
 
-  /**
-   * Simple boolean to detect if authView 'sign_in' or 'sign_up' or 'magic_link' is used
-   *
-   * @returns boolean
-   */
-  const SignView =
-    authView === 'sign_in' ||
-    authView === 'sign_up' ||
-    authView === 'magic_link'
+  const { supabase } = useAppContext()
 
-  useEffect(() => {
-    createStitches({
-      theme: merge(
-        appearance?.theme?.default ?? {},
-        appearance?.variables?.default ?? {}
-      ),
-    })
-  }, [appearance])
-
-  /**
-   * Wraps around all auth components
-   * renders the social auth providers if SignView is true
-   *
-   * also handles the theme override
-   *
-   * @param children
-   * @returns React.ReactNode
-   */
-  const Container = ({ children }: { children: React.ReactNode }) => (
-    <div
-      className={
-        theme !== 'default'
-          ? createTheme(
-              merge(
-                appearance?.theme?.[theme],
-                appearance?.variables?.[theme] ?? {}
-              )
-            )
-          : ''
-      }
-    >
-      {SignView && (
-        <SocialAuth
-          appearance={appearance}
-          supabaseClient={supabaseClient}
-          providers={providers}
-          providerScopes={providerScopes}
-          queryParams={queryParams}
-          socialLayout={socialLayout}
-          redirectTo={redirectTo}
-          onlyThirdPartyProviders={onlyThirdPartyProviders}
-          i18n={i18n}
-          view={authView}
-        />
-      )}
-      {!onlyThirdPartyProviders && children}
-    </div>
+  const isSignView = (
+    view === 'sign_in' ||
+    view === 'sign_up' ||
+    view === 'magic_link'
   )
 
   useEffect(() => {
-    /**
-     * Overrides the authview if it is changed externally
-     */
-    const { data: authListener } = supabaseClient.auth.onAuthStateChange(
-      (event) => {
-        if (event === 'PASSWORD_RECOVERY') {
-          setAuthView('update_password')
-        } else if (event === 'USER_UPDATED') {
-          setAuthView('sign_in')
-        }
+    // Overrides the authview if it is changed externally
+    const listener = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setView('update_password')
+      } else if (event === 'USER_UPDATED' || event === 'SIGNED_OUT') {
+        setView('sign_in')
       }
-    )
-    setAuthView(view)
+    })
+    
+    return () => listener.data.subscription.unsubscribe()
+  }, [supabase.auth, setView])
 
-    return () => authListener.subscription.unsubscribe()
-  }, [view, supabaseClient.auth])
-
-  const emailProp: Omit<EmailAuthProps, 'authView' | 'id'> = {
-    supabaseClient,
-    setAuthView,
+  const emailProps: Omit<EmailAuthProps, 'authView' | 'id'> = {
+    setAuthView: setView,
     defaultEmail,
     defaultPassword,
     setDefaultEmail,
@@ -127,71 +94,60 @@ export const Auth = ({
     redirectTo,
     magicLink,
     showLinks,
-    i18n,
-    appearance,
+    i18n
   }
 
-  /**
-   * View handler, displays the correct Auth view
-   * all views are wrapped in <Container/>
-   */
-  switch (authView) {
+  let ViewUI: JSX.Element
+
+  switch (view) {
     case VIEWS.SIGN_IN:
-      return (
-        <Container>
-          <EmailAuth {...emailProp} authView={'sign_in'} />
-        </Container>
+      ViewUI = (
+        <EmailAuth
+          {...emailProps}
+          authView={'sign_in'}
+        />
       )
+      break
     case VIEWS.SIGN_UP:
-      return (
-        <Container>
-          <EmailAuth
-            {...emailProp}
-            authView={'sign_up'}
-            additionalData={additionalData}
-            children={children}
-          />
-        </Container>
+      ViewUI = (
+        <EmailAuth
+          {...emailProps}
+          authView={'sign_up'}
+          additionalData={additionalData}
+        >
+          {children}
+        </EmailAuth>
       )
+      break
     case VIEWS.FORGOTTEN_PASSWORD:
-      return (
-        <Container>
-          <ForgottenPassword
-            appearance={appearance}
-            supabaseClient={supabaseClient}
-            setAuthView={setAuthView}
-            redirectTo={redirectTo}
-            showLinks={showLinks}
-            i18n={i18n}
-          />
-        </Container>
+      ViewUI = (
+        <ForgottenPassword
+          setAuthView={setView}
+          redirectTo={redirectTo}
+          showLinks={showLinks}
+          i18n={i18n}
+        />
       )
+      break
     case VIEWS.MAGIC_LINK:
-      return (
-        <Container>
-          <MagicLink
-            appearance={appearance}
-            supabaseClient={supabaseClient}
-            setAuthView={setAuthView}
-            redirectTo={redirectTo}
-            showLinks={showLinks}
-            i18n={i18n}
-          />
-        </Container>
+      ViewUI = (
+        <MagicLink
+          setAuthView={setView}
+          redirectTo={redirectTo}
+          showLinks={showLinks}
+          i18n={i18n}
+        />
       )
+      break
     case VIEWS.UPDATE_PASSWORD:
       return (
         <UpdatePassword
-          appearance={appearance}
-          supabaseClient={supabaseClient}
           i18n={i18n}
         />
       )
     case VIEWS.VERIFY_OTP:
       return (
         <VerifyOtp
-          appearance={appearance}
-          supabaseClient={supabaseClient}
           otpType={otpType}
           i18n={i18n}
         />
@@ -199,4 +155,21 @@ export const Auth = ({
     default:
       return null
   }
+
+  return (
+    <div>
+      {isSignView && (
+        <SocialAuth
+          providers={providers}
+          providerScopes={providerScopes}
+          queryParams={queryParams}
+          redirectTo={redirectTo}
+          onlyThirdPartyProviders={onlyThirdPartyProviders}
+          i18n={i18n}
+          view={view}
+        />
+      )}
+      {!onlyThirdPartyProviders && ViewUI}
+    </div>
+  )
 }

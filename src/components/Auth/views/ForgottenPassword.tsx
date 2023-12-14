@@ -1,46 +1,33 @@
-import { SupabaseClient } from '@supabase/supabase-js'
 import React, { useState } from 'react'
 import { VIEWS, I18nVariables, RedirectTo, ViewType } from '@supabase/auth-ui-shared'
-import { Appearance } from '../types'
-import {
-  Anchor,
-  Button,
-  Container,
-  Input,
-  Label,
-  Message,
-} from '../components'
+import { useAppContext } from 'contexts'
+
+type ForgottenPasswordProps = {
+  setAuthView?: (view: ViewType) => void
+  redirectTo?: RedirectTo
+  i18n?: I18nVariables
+  showLinks?: boolean
+}
 
 export function ForgottenPassword({
   setAuthView = () => {},
-  supabaseClient,
   redirectTo,
   i18n,
-  appearance,
   showLinks = false,
-}: {
-  setAuthView?: (view: ViewType) => void
-  supabaseClient: SupabaseClient
-  redirectTo?: RedirectTo
-  i18n?: I18nVariables
-  appearance?: Appearance
-  showLinks?: boolean
-}) {
+}: ForgottenPasswordProps) {
   const [email, setEmail] = useState('')
-  const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+  const { supabase, withCaptureAuthError, error } = useAppContext()
 
   const handlePasswordReset = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setError('')
     setMessage('')
     setLoading(true)
-    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+    const { error } = await withCaptureAuthError(() => supabase.auth.resetPasswordForEmail(email, {
       redirectTo,
-    })
-    if (error) setError(error.message)
-    else setMessage(i18n?.forgotten_password?.confirmation_text as string)
+    }))
+    if (!error) setMessage(i18n?.forgotten_password?.confirmation_text as string)
     setLoading(false)
   }
 
@@ -48,13 +35,14 @@ export function ForgottenPassword({
 
   return (
     <form id="auth-forgot-password" onSubmit={handlePasswordReset}>
-      <Container direction="vertical" gap="large" appearance={appearance}>
-        <Container gap="large" direction="vertical" appearance={appearance}>
+      <div className="flex flex-col gap-2 my-2">
+        <div className="flex flex-col gap-2 my-2">
           <div>
-            <Label htmlFor="email" appearance={appearance}>
+            <label htmlFor="email" className="text-sm mb-1 text-black block">
               {labels?.email_label}
-            </Label>
-            <Input
+            </label>
+            <input
+              className="py-1 px-2 cursor-text border-[1px] border-solid border-black text-s w-full text-black box-border hover:[outline:none] focus:[outline:none]"
               id="email"
               name="email"
               type="email"
@@ -63,37 +51,31 @@ export function ForgottenPassword({
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setEmail(e.target.value)
               }
-              appearance={appearance}
             />
           </div>
-          <Button
+          <button
+            className="flex justify-center items-center gap-2 rounded-md text-sm p-1 cursor-pointer border-[1px] border-zinc-950 w-full disabled:opacity-70 disabled:cursor-[unset] bg-amber-200 text-amber-950 hover:bg-amber-300"
             type="submit"
-            color="primary"
-            loading={loading}
-            appearance={appearance}
+            disabled={loading}
           >
             {loading ? labels?.loading_button_label : labels?.button_label}
-          </Button>
+          </button>
           {showLinks && (
-            <Anchor
+            <a
+              className="block text-xs text-center mb-1 underline hover:text-blue-700"
               href="#auth-sign-in"
               onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                 e.preventDefault()
                 setAuthView(VIEWS.SIGN_IN)
               }}
-              appearance={appearance}
             >
               {i18n?.sign_in?.link_text}
-            </Anchor>
+            </a>
           )}
-          {message && <Message appearance={appearance}>{message}</Message>}
-          {error && (
-            <Message color="danger" appearance={appearance}>
-              {error}
-            </Message>
-          )}
-        </Container>
-      </Container>
+          {message && <span className="block text-center text-xs mb-1 rounded-md py-6 px-4 border-[1px] border-black">{message}</span>}
+          {error && <span className="block text-center text-xs mb-1 rounded-md py-6 px-4 border-[1px] text-red-900 bg-red-100 border-red-950">{error.message}</span>}
+        </div>
+      </div>
     </form>
   )
 }

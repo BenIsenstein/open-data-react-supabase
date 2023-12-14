@@ -1,12 +1,6 @@
-import { css } from '@stitches/core'
 import { Provider } from '@supabase/supabase-js'
 
-const iconDefaultStyles = css({
-  width: '21px',
-  height: '21px',
-})
-
-export interface IconsProps {
+type IconsProps = {
   provider: Provider
 }
 
@@ -33,7 +27,6 @@ export const Icons = ({ provider }: IconsProps) => {
 
 const google = () => (
   <svg
-    className={iconDefaultStyles()}
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 48 48"
     width="21px"
@@ -60,7 +53,6 @@ const google = () => (
 
 const facebook = () => (
   <svg
-    className={iconDefaultStyles()}
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 48 48"
     width="21px"
@@ -76,7 +68,6 @@ const facebook = () => (
 
 const twitter = () => (
   <svg
-    className={iconDefaultStyles()}
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 48 48"
     width="21px"
@@ -91,7 +82,6 @@ const twitter = () => (
 
 const apple = () => (
   <svg
-    className={iconDefaultStyles()}
     fill="gray"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
@@ -105,7 +95,6 @@ const apple = () => (
 
 const github = () => (
   <svg
-    className={iconDefaultStyles()}
     fill="gray"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 30 30"
@@ -119,7 +108,6 @@ const github = () => (
 
 const gitlab = () => (
   <svg
-    className={iconDefaultStyles()}
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 48 48"
     width="21px"
@@ -137,7 +125,6 @@ const gitlab = () => (
 
 const bitbucket = () => (
   <svg
-    className={iconDefaultStyles()}
     xmlns="http://www.w3.org/2000/svg"
     width="512"
     height="512"
@@ -174,7 +161,6 @@ const bitbucket = () => (
 
 const discord = () => (
   <svg
-    className={iconDefaultStyles()}
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 48 48"
     width="21px"
@@ -189,7 +175,6 @@ const discord = () => (
 
 const azure = () => (
   <svg
-    className={iconDefaultStyles()}
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 48 48"
     width="21px"
@@ -255,7 +240,6 @@ const azure = () => (
 
 const keycloak = () => (
   <svg
-    className={iconDefaultStyles()}
     width="512"
     height="512"
     viewBox="0 0 512 512"
@@ -271,7 +255,6 @@ const keycloak = () => (
 
 const linkedin = () => (
   <svg
-    className={iconDefaultStyles()}
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 48 48"
     width="21px"
@@ -290,7 +273,6 @@ const linkedin = () => (
 
 const notion = () => (
   <svg
-    className={iconDefaultStyles()}
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 48 48"
     width="21px"
@@ -321,7 +303,6 @@ const notion = () => (
 
 const slack = () => (
   <svg
-    className={iconDefaultStyles()}
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 48 48"
     width="21px"
@@ -364,7 +345,6 @@ const slack = () => (
 
 const spotify = () => (
   <svg
-    className={iconDefaultStyles()}
     width="512"
     height="512"
     viewBox="0 0 512 512"
@@ -380,7 +360,6 @@ const spotify = () => (
 
 const twitch = () => (
   <svg
-    className={iconDefaultStyles()}
     width="512"
     height="512"
     viewBox="0 0 512 512"
@@ -399,7 +378,6 @@ const twitch = () => (
 
 const workos = () => (
   <svg
-    className={iconDefaultStyles()}
     width="512"
     height="512"
     viewBox="0 0 512 512"
@@ -419,7 +397,6 @@ const workos = () => (
 
 const kakao = () => (
   <svg
-    className={iconDefaultStyles()}
     xmlns="http://www.w3.org/2000/svg"
     width="2500"
     height="2500"

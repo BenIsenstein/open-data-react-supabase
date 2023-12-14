@@ -1,4 +1,3 @@
-import { SupabaseClient } from '@supabase/supabase-js'
 import React, { useEffect, useRef, useState } from 'react'
 import {
   I18nVariables,
@@ -8,15 +7,7 @@ import {
   VIEWS,
   ViewType,
 } from '@supabase/auth-ui-shared'
-import { Appearance } from '../types'
-import {
-  Anchor,
-  Button,
-  Container,
-  Input,
-  Label,
-  Message,
-} from '../components'
+import { useAppContext } from 'contexts'
 
 export interface EmailAuthProps {
   authView?: ViewSignIn | ViewSignUp
@@ -25,13 +16,11 @@ export interface EmailAuthProps {
   setAuthView?: (view: ViewType) => void
   setDefaultEmail?: (email: string) => void
   setDefaultPassword?: (password: string) => void
-  supabaseClient: SupabaseClient
   showLinks?: boolean
   redirectTo?: RedirectTo
   additionalData?: { [key: string]: unknown }
   magicLink?: boolean
   i18n?: I18nVariables
-  appearance?: Appearance
   children?: React.ReactNode
 }
 
@@ -42,75 +31,55 @@ export function EmailAuth({
   setAuthView = () => {},
   setDefaultEmail = () => {},
   setDefaultPassword = () => {},
-  supabaseClient,
   showLinks = false,
   redirectTo,
   additionalData,
   magicLink,
   i18n,
-  appearance,
   children,
 }: EmailAuthProps) {
   const isMounted = useRef<boolean>(true)
   const [email, setEmail] = useState(defaultEmail)
   const [password, setPassword] = useState(defaultPassword)
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
 
+  const { supabase, withCaptureAuthError, error } = useAppContext()
+
   useEffect(() => {
     isMounted.current = true
-    setEmail(defaultEmail)
-    setPassword(defaultPassword)
-
-    return () => {
-      isMounted.current = false
-    }
-  }, [authView, defaultEmail, defaultPassword])
+    return () => {isMounted.current = false}
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setError('')
     setLoading(true)
     switch (authView) {
       case 'sign_in': {
-        const { error: signInError } =
-          await supabaseClient.auth.signInWithPassword({
-            email,
-            password,
-          })
-      
-        if (signInError) setError(signInError.message)
+        await withCaptureAuthError(() => supabase.auth.signInWithPassword({
+          email,
+          password,
+        }))
         break
       }
       case 'sign_up': {
-        const options: { emailRedirectTo: RedirectTo; data?: object } = {
+        const options = {
           emailRedirectTo: redirectTo,
+          data: additionalData
         }
-        if (additionalData) {
-          options.data = additionalData
-        }
-        const {
-          data: { user: signUpUser, session: signUpSession },
-          error: signUpError,
-        } = await supabaseClient.auth.signUp({
+
+        const { data: { user, session }} = await withCaptureAuthError(() => supabase.auth.signUp({
           email,
           password,
-          options,
-        })
-        if (signUpError)
-          setError(signUpError.message)
+          options
+        }))
+        
         // Check if session is null -> email confirmation setting is turned on
-        else if (signUpUser && !signUpSession)
-          setMessage(i18n?.sign_up?.confirmation_text as string)
+        if (user && !session) setMessage(i18n?.sign_up?.confirmation_text as string)
         break
       }
     }
 
-    /*
-     * it is possible the auth component may have been unmounted at this point
-     * check if component is mounted before setting a useState
-     */
     if (isMounted.current) setLoading(false)
   }
 
@@ -129,13 +98,14 @@ export function EmailAuth({
       autoComplete={'on'}
       style={{ width: '100%' }}
     >
-      <Container direction="vertical" gap="large" appearance={appearance}>
-        <Container direction="vertical" gap="large" appearance={appearance}>
+      <div className="flex flex-col gap-2 my-2">
+        <div className="flex flex-col gap-2 my-2">
           <div>
-            <Label htmlFor="email" appearance={appearance}>
+            <label htmlFor="email" className="text-sm mb-1 text-black block">
               {labels?.email_label}
-            </Label>
-            <Input
+            </label>
+            <input
+              className="py-1 px-2 cursor-text border-[1px] border-solid border-black text-s w-full text-black box-border hover:[outline:none] focus:[outline:none]"
               id="email"
               type="email"
               name="email"
@@ -145,14 +115,14 @@ export function EmailAuth({
                 setEmail(e.target.value)
               }
               autoComplete="email"
-              appearance={appearance}
             />
           </div>
           <div>
-            <Label htmlFor="password" appearance={appearance}>
+            <label htmlFor="password" className="text-sm mb-1 text-black block">
               {labels?.password_label}
-            </Label>
-            <Input
+            </label>
+            <input
+              className="py-1 px-2 cursor-text border-[1px] border-solid border-black text-s w-full text-black box-border hover:[outline:none] focus:[outline:none]"
               id="password"
               type="password"
               name="password"
@@ -164,79 +134,73 @@ export function EmailAuth({
               autoComplete={
                 authView === 'sign_in' ? 'current-password' : 'new-password'
               }
-              appearance={appearance}
             />
           </div>
           {children}
-        </Container>
+        </div>
 
-        <Button
+        <button
+          className="flex justify-center items-center gap-2 rounded-md text-sm p-1 cursor-pointer border-[1px] border-zinc-950 w-full disabled:opacity-70 disabled:cursor-[unset] bg-amber-200 text-amber-950 hover:bg-amber-300"
           type="submit"
-          color="primary"
-          loading={loading}
-          appearance={appearance}
+          disabled={loading}
         >
           {loading ? labels?.loading_button_label : labels?.button_label}
-        </Button>
+        </button>
 
         {showLinks && (
-          <Container direction="vertical" gap="small" appearance={appearance}>
+          <div className="flex flex-col gap-2 my-2">
             {authView === VIEWS.SIGN_IN && magicLink && (
-              <Anchor
+              <a
+                className="block text-xs text-center mb-1 underline hover:text-blue-700"
                 href="#auth-magic-link"
                 onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   e.preventDefault()
                   setAuthView(VIEWS.MAGIC_LINK)
                 }}
-                appearance={appearance}
               >
                 {i18n?.magic_link?.link_text}
-              </Anchor>
+              </a>
             )}
             {authView === VIEWS.SIGN_IN && (
-              <Anchor
+              <a
+                className="block text-xs text-center mb-1 underline hover:text-blue-700"
                 href="#auth-forgot-password"
                 onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   e.preventDefault()
                   setAuthView(VIEWS.FORGOTTEN_PASSWORD)
                 }}
-                appearance={appearance}
               >
                 {i18n?.forgotten_password?.link_text}
-              </Anchor>
+              </a>
             )}
             {authView === VIEWS.SIGN_IN ? (
-              <Anchor
+              <a
+                className="block text-xs text-center mb-1 underline hover:text-blue-700"
                 href="#auth-sign-up"
                 onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   e.preventDefault()
                   handleViewChange(VIEWS.SIGN_UP)
                 }}
-                appearance={appearance}
               >
                 {i18n?.sign_up?.link_text}
-              </Anchor>
+              </a>
             ) : (
-              <Anchor
+              <a
+                className="block text-xs text-center mb-1 underline hover:text-blue-700"
                 href="#auth-sign-in"
                 onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                   e.preventDefault()
                   handleViewChange(VIEWS.SIGN_IN)
                 }}
-                appearance={appearance}
               >
                 {i18n?.sign_in?.link_text}
-              </Anchor>
+              </a>
             )}
-          </Container>
+          </div>
         )}
-      </Container>
-      {message && <Message appearance={appearance}>{message}</Message>}
-      {error && (
-        <Message color="danger" appearance={appearance}>
-          {error}
-        </Message>
-      )}
+      </div>
+      {message && <span className="block text-center text-xs mb-1 rounded-md py-6 px-4 border-[1px] border-black">{message}</span>}
+      {error && <span className="block text-center text-xs mb-1 rounded-md py-6 px-4 border-[1px] text-red-900 bg-red-100 border-red-950">{error.message}</span>}
     </form>
   )
 }

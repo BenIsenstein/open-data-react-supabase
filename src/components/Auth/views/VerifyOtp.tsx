@@ -1,46 +1,35 @@
 import {
   EmailOtpType,
   MobileOtpType,
-  SupabaseClient,
   VerifyOtpParams,
 } from '@supabase/supabase-js'
 import React, { useState } from 'react'
 import { VIEWS, I18nVariables, OtpType, ViewType } from '@supabase/auth-ui-shared'
-import { Appearance } from '../types'
-import {
-  Anchor,
-  Button,
-  Container,
-  Input,
-  Label,
-  Message,
-} from '../components'
+import { useAppContext } from 'contexts'
+
+type VerifyOtpProps = {
+  setAuthView?: (view: ViewType) => void
+  otpType: OtpType
+  i18n?: I18nVariables
+  showLinks?: boolean
+}
 
 export function VerifyOtp({
   setAuthView = () => {},
-  supabaseClient,
   otpType = 'email',
   i18n,
-  appearance,
   showLinks = false,
-}: {
-  setAuthView?: (view: ViewType) => void
-  supabaseClient: SupabaseClient
-  otpType: OtpType
-  i18n?: I18nVariables
-  appearance?: Appearance
-  showLinks?: boolean
-}) {
+}: VerifyOtpProps) {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [token, setToken] = useState('')
-  const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const { supabase, withCaptureAuthError, error } = useAppContext()
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setError('')
     setMessage('')
     setLoading(true)
 
@@ -49,6 +38,7 @@ export function VerifyOtp({
       token,
       type: otpType as EmailOtpType,
     }
+
     if (['sms', 'phone_change'].includes(otpType)) {
       verifyOpts = {
         phone,
@@ -56,8 +46,9 @@ export function VerifyOtp({
         type: otpType as MobileOtpType,
       }
     }
-    const { error } = await supabaseClient.auth.verifyOtp(verifyOpts)
-    if (error) setError(error.message)
+
+    await withCaptureAuthError(() => supabase.auth.verifyOtp(verifyOpts))
+
     setLoading(false)
   }
 
@@ -65,13 +56,14 @@ export function VerifyOtp({
 
   return (
     <form id="auth-magic-link" onSubmit={handleSubmit}>
-      <Container gap="large" direction="vertical" appearance={appearance}>
+      <div className="flex flex-col gap-2 my-2">
         {['sms', 'phone_change'].includes(otpType) ? (
           <div>
-            <Label htmlFor="phone" appearance={appearance}>
+            <label htmlFor="phone" className="text-sm mb-1 text-black block">
               {labels?.phone_input_label}
-            </Label>
-            <Input
+            </label>
+            <input
+            className="py-1 px-2 cursor-text border-[1px] border-solid border-black text-s w-full text-black box-border hover:[outline:none] focus:[outline:none]"
               id="phone"
               name="phone"
               type="text"
@@ -80,15 +72,15 @@ export function VerifyOtp({
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setPhone(e.target.value)
               }
-              appearance={appearance}
             />
           </div>
         ) : (
           <div>
-            <Label htmlFor="email" appearance={appearance}>
+            <label htmlFor="email" className="text-sm mb-1 text-black block">
               {labels?.email_input_label}
-            </Label>
-            <Input
+            </label>
+            <input
+            className="py-1 px-2 cursor-text border-[1px] border-solid border-black text-s w-full text-black box-border hover:[outline:none] focus:[outline:none]"
               id="email"
               name="email"
               type="email"
@@ -97,15 +89,15 @@ export function VerifyOtp({
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setEmail(e.target.value)
               }
-              appearance={appearance}
             />
           </div>
         )}
         <div>
-          <Label htmlFor="token" appearance={appearance}>
+          <label htmlFor="token" className="text-sm mb-1 text-black block">
             {labels?.token_input_label}
-          </Label>
-          <Input
+          </label>
+          <input
+          className="py-1 px-2 cursor-text border-[1px] border-solid border-black text-s w-full text-black box-border hover:[outline:none] focus:[outline:none]"
             id="token"
             name="token"
             type="text"
@@ -113,36 +105,30 @@ export function VerifyOtp({
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setToken(e.target.value)
             }
-            appearance={appearance}
           />
         </div>
-        <Button
-          color="primary"
+        <button
+          className="flex justify-center items-center gap-2 rounded-md text-sm p-1 cursor-pointer border-[1px] border-zinc-950 w-full disabled:opacity-70 disabled:cursor-[unset] bg-amber-200 text-amber-950 hover:bg-amber-300"
           type="submit"
-          loading={loading}
-          appearance={appearance}
+          disabled={loading}
         >
           {loading ? labels?.loading_button_label : labels?.button_label}
-        </Button>
+        </button>
         {showLinks && (
-          <Anchor
+          <a
+            className="block text-xs text-center mb-1 underline hover:text-blue-700"
             href="#auth-sign-in"
             onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
               e.preventDefault()
               setAuthView(VIEWS.SIGN_IN)
             }}
-            appearance={appearance}
           >
             {i18n?.sign_in?.link_text}
-          </Anchor>
+          </a>
         )}
-        {message && <Message appearance={appearance}>{message}</Message>}
-        {error && (
-          <Message color="danger" appearance={appearance}>
-            {error}
-          </Message>
-        )}
-      </Container>
+        {message && <span className="block text-center text-xs mb-1 rounded-md py-6 px-4 border-[1px] border-black">{message}</span>}
+        {error && <span className="block text-center text-xs mb-1 rounded-md py-6 px-4 border-[1px] text-red-900 bg-red-100 border-red-950">{error.message}</span>}
+      </div>
     </form>
   )
 }
