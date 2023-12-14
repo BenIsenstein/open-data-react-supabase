@@ -14,7 +14,7 @@ const views: { id: ViewType; title: string }[] = [
 
 export const App = () => {
   const [view, setView] = useState<ViewType>('sign_in')
-  const { user, supabase, withCaptureAuthError } = useAppContext()
+  const { user, supabase, withCaptureAuthError, clearError } = useAppContext()
 
   return (
     <div className="box-border p-5 relative">
@@ -42,12 +42,14 @@ export const App = () => {
             providers={['google', 'github', 'facebook']}
           />
         </div>
-
         <div className="flex flex-col items-center gap-4 border-[1px] border-slate-300 rounded-lg shadow-sm p-8 mb-6 h-max">
           <div className="text-scale-1200 text-base font-semibold">Component View</div>
           <select
             value={view}
-            onChange={(e) => setView(e.target.value as ViewType)}
+            onChange={(e) => {
+              clearError()
+              setView(e.target.value as ViewType)}
+            }
             className="text-lg rounded border-[1px] border-slate-950 text-gray-600 pl-5 pr-10 h-12 bg-white hover:bg-slate-100 cursor-pointer appearance-none w-max text-center"
           >
             {views.map((v, i) => <option key={i} value={v.id}>{v.title}</option>)}

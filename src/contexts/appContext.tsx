@@ -4,15 +4,14 @@ import { supabase } from 'shared'
 
 type SupabaseAuthResponseLike = { error: AuthError | null, [key: string]: unknown }
 
-type AuthCallback<T extends SupabaseAuthResponseLike> = () => Promise<T>
-
-type WithCaptureAuthError = <T extends SupabaseAuthResponseLike>(cb: AuthCallback<T>) => Promise<T>
+type WithCaptureAuthError = <T extends SupabaseAuthResponseLike>(cb: () => Promise<T>) => Promise<T>
 
 type TAppContext = {
   supabase: SupabaseClient<unknown, "public", unknown>
   session: Session | null
   user: User | null
   error: AuthError | null
+  clearError: () => void
   withCaptureAuthError: WithCaptureAuthError
 }
 
@@ -21,6 +20,7 @@ const AppContext = createContext<TAppContext>({
   session: null,
   user: null,
   error: null,
+  clearError: () => {},
   withCaptureAuthError: (async () => ({ error: null })) as WithCaptureAuthError
 })
 
@@ -35,6 +35,8 @@ export const AppContextProvider: React.FC<PropsWithChildren> = ({ children }) =>
     return result
   }
 
+  const clearError = () => setError(null)
+
   useEffect(() => {
     const listener = supabase.auth.onAuthStateChange(async (_, session) => {
       setSession(session)
@@ -48,6 +50,7 @@ export const AppContextProvider: React.FC<PropsWithChildren> = ({ children }) =>
     session,
     user: session?.user ?? null,
     error,
+    clearError,
     withCaptureAuthError
   }
 

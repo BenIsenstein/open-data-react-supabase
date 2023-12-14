@@ -1,2 +1,1 @@
-import { Auth } from './Auth'
-export { Auth }
+export * from './Auth'
