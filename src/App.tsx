@@ -3,6 +3,9 @@ import { ViewType } from '@supabase/auth-ui-shared'
 import { Auth } from 'components'
 import { useAppContext } from 'contexts'
 
+const OAUTH_PROVIDERS = import.meta.env.VITE_OAUTH_PROVIDERS || ''
+const providers = OAUTH_PROVIDERS?.split(',')?.filter((str: string) => !!str)
+
 const views: { id: ViewType; title: string }[] = [
   { id: 'sign_in', title: 'Sign In' },
   { id: 'sign_up', title: 'Sign Up' },
@@ -39,7 +42,7 @@ export const App = () => {
           <Auth
             view={view}
             setView={setView}
-            providers={['google', 'github', 'facebook']}
+            providers={providers}
           />
         </div>
         <div className="flex flex-col items-center gap-4 border-[1px] border-slate-300 rounded-lg shadow-sm p-8 mb-6 h-max">

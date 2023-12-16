@@ -267,7 +267,7 @@ export const Auth: FC<AuthProps> = ({
             className="flex flex-col gap-2 my-2"
           >
             {inputs.map(({ id, type, label, placeholder, autoFocus, autoComplete, onChange }) => (
-              <div>
+              <div key={id}>
                 <label htmlFor={id} className="text-sm mb-1 text-black block">
                   {label}
                 </label>
@@ -296,6 +296,7 @@ export const Auth: FC<AuthProps> = ({
               <div className="flex flex-col gap-3 my-2">
                 {links.map(v => (
                   <a
+                    key={v}
                     className="block text-xs text-center underline hover:text-blue-700"
                     href={`#${v}`}
                     onClick={(e) => {
