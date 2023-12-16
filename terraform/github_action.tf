@@ -4,8 +4,8 @@ locals {
     "6938fd4d98bab03faadb97b34396831e3780aea1",
     "1b511abead59c6ce207077c0bf0e0043b1382612"
   ]
-  github_org  = regex("(\\w+)/\\w+$", var.repo_url)[0]
-  github_repo = regex("/(\\w+)$", var.repo_url)[0]
+  github_org  = regex("(\\w+)\\/.+$", var.repo_url)[0]
+  github_repo = regex("\\/(.+)\\.git$", var.repo_url)[0]
 }
 
 resource "aws_iam_openid_connect_provider" "github_oidc" {
@@ -35,7 +35,7 @@ data "aws_iam_policy_document" "github_oidc" {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
 
-      values = ["repo:${local.github_org}/${local.github_repo}"]
+      values = ["repo:${local.github_org}/${local.github_repo}:*"]
     }
   }
 }
@@ -58,15 +58,17 @@ resource "aws_iam_role" "web_pipeline" {
       ]
     })
   }
-  assume_role_policy = data.aws_iam_policy_document.pipeline_oidc.json
+  assume_role_policy = data.aws_iam_policy_document.github_oidc.json
 }
 
 resource "local_file" "github_action" {
   content = templatefile("${path.module}/templates/deployToS3.yml.tpl",
     {
-      WEB_BUCKET  = local.bucket_name
-      AWS_REGION  = var.aws_region
-      ASSUME_ROLE = resource.aws_iam_role.web_pipeline.arn
+      WEB_BUCKET            = local.bucket_name
+      AWS_REGION            = var.aws_region
+      ASSUME_ROLE           = resource.aws_iam_role.web_pipeline.arn
+      VITE_SUPABASE_API_KEY = var.supabase_key
+      VITE_SUPABASE_API_URL = var.supabase_url
   })
   filename = "../.github/workflows/deployToS3.yml"
 }
