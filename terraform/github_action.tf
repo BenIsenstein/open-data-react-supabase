@@ -4,9 +4,15 @@ locals {
     "6938fd4d98bab03faadb97b34396831e3780aea1",
     "1b511abead59c6ce207077c0bf0e0043b1382612"
   ]
-  github_org  = regex("(\\w+)\\/.+$", var.repo_url)[0]
-  github_repo = regex("\\/(.+)\\.git$", var.repo_url)[0]
+  github_org     = regex("(\\w+)\\/.+$", var.repo_url)[0]
+  github_repo    = regex("\\/(.+)\\.git$", var.repo_url)[0]
+  release_branch = coalesce(var.release_branch, concat(data.github_repository.repo.*.default_branch, [""])[0])
 }
+
+data "github_repository" "repo" {
+  count = var.release_branch == null ? 1 : 0
+  name  = local.github_repo
+}u
 
 resource "aws_iam_openid_connect_provider" "github_oidc" {
   url             = "https://token.actions.githubusercontent.com"
@@ -35,7 +41,7 @@ data "aws_iam_policy_document" "github_oidc" {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
 
-      values = ["repo:${local.github_org}/${local.github_repo}:*"]
+      values = ["repo:${local.github_org}/${local.github_repo}:${local.release_branch}"]
     }
   }
 }
@@ -64,11 +70,12 @@ resource "aws_iam_role" "web_pipeline" {
 resource "local_file" "github_action" {
   content = templatefile("${path.module}/templates/deployToS3.yml.tpl",
     {
-      WEB_BUCKET            = local.bucket_name
-      AWS_REGION            = var.aws_region
       ASSUME_ROLE           = resource.aws_iam_role.web_pipeline.arn
+      AWS_REGION            = var.aws_region
+      RELEASE_BRANCH        = local.release_branch
       VITE_SUPABASE_API_KEY = var.supabase_key
       VITE_SUPABASE_API_URL = var.supabase_url
+      WEB_BUCKET            = local.bucket_name
   })
   filename = "../.github/workflows/deployToS3.yml"
 }

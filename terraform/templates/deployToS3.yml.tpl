@@ -2,7 +2,7 @@ name: Build and deploy to aws
 on:
   push:
     branches:
-      - master
+      - ${RELEASE_BRANCH}
 env:       
   VITE_SUPABASE_API_KEY: ${VITE_SUPABASE_API_KEY}
   VITE_SUPABASE_API_URL: ${VITE_SUPABASE_API_URL}
