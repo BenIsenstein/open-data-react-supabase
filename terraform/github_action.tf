@@ -12,7 +12,7 @@ locals {
 data "github_repository" "repo" {
   count = var.release_branch == null ? 1 : 0
   name  = local.github_repo
-}u
+}
 
 resource "aws_iam_openid_connect_provider" "github_oidc" {
   url             = "https://token.actions.githubusercontent.com"
