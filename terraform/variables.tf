@@ -15,6 +15,17 @@ variable "project_visibility" {
   default     = "public"
 }
 
+variable "release_branch" {
+  description = <<EOT
+Release branch to configure the Github action for.
+Default: Repository Default Branch
+WARNING: If changed the terraform should be apllied locally to avoid
+authentication error on the next pipeline exectution.
+EOT
+  type        = string
+  default     = null
+}
+
 variable "repo_url" {
   description = "url of the repository"
   type        = string
